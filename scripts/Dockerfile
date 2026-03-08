@@ -1,4 +1,4 @@
-FROM golang:1.19.3-alpine as builder
+FROM golang:1.26.0-alpine as builder
 RUN apk --no-cache add git ca-certificates gcc g++
 
 COPY . /go/src/github.com/go-sonic/sonic/

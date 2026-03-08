@@ -60,7 +60,7 @@ jobs:
         uses: crazy-max/ghaction-xgo@v3
         with:
           xgo_version: latest
-          go_version: 1.21
+          go_version: 1.26
           dest: build
           prefix: sonic
           targets: ${{matrix.goos}}/${{matrix.goarch}}
