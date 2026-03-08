@@ -325,10 +325,12 @@ func (s *Server) handleError(ctx *gin.Context, err error) {
 	if val := header["Content-Type"]; len(val) == 0 {
 		header["Content-Type"] = htmlContentType
 	}
+	ctx.Status(status)
 
 	model["status"] = status
 	model["message"] = message
 	model["err"] = err
+	model["request_id"] = middleware.GetRequestID(ctx)
 
 	err = s.Template.ExecuteTemplate(ctx.Writer, templateName, model)
 	if err != nil {
