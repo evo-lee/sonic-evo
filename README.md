@@ -66,15 +66,19 @@ The URL of the admin console is http://ip:port/admin
 The default port is 8080.
 
 ## 🔨️  Build
+**Requirements**
+- Go 1.26+
+
 **1. Pull Project**
 ```bash
-git clone --recursive --depth 1 https://github.com/go-sonic/sonic
+git clone --depth 1 https://github.com/go-sonic/sonic
 ```
 **2. Run**
 ```bash
 cd sonic
 go run main.go
 ```
+> The default theme is now bundled in this repository. No `git submodule` initialization is required.
 > To compile this package on Windows, you must have the gcc compiler installed，for example the TDM-GCC Toolchain can be found ([here](https://jmeubank.github.io/tdm-gcc/)).
 
 🚀 Done! Your project is now compiled and ready to use.
@@ -116,4 +120,3 @@ Special thanks to Evan (evanzhao@88.com), who designed the logo.
 ## 📄 License
 
 Source code in `sonic` is available under the [MIT License](/LICENSE.md).
-

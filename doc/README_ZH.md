@@ -58,15 +58,19 @@ cd sonic
 后台管理路径是 http://ip:port/admin
 
 ## 🔨️  构建
+**环境要求**
+- Go 1.26+
+
 **1. 拉取项目**
 ```bash
-git clone --recursive --depth 1 https://github.com/go-sonic/sonic
+git clone --depth 1 https://github.com/go-sonic/sonic
 ```
 **2. 运行**
 ```bash
 cd sonic
 go run main.go
 ```
+> 默认主题已内置到仓库中，不再需要执行 `git submodule` 初始化。
 > 如果你在windows上构建该项目，请确保你已经正确安装了gcc编译器，比如，你可以在[这里](https://jmeubank.github.io/tdm-gcc/)找到一个TDM版本的gcc编译器。
 
 🚀 完成! 你的项目现在已经运行起来了。
@@ -111,4 +115,3 @@ Sonic 遵循 [Contributor Covenant](http://contributor-covenant.org/version/1/3/
 ## 📄 License
 
 Source code in `sonic` is available under the [MIT License](/LICENSE.md).
-
