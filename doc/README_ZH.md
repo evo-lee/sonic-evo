@@ -22,7 +22,7 @@ Sonic 意为声速的、声音的，正如它的名字一样, sonic 致力于成
 感谢 [Halo](https://github.com/halo-dev/) 项目组，本项目的灵感来自Halo，前端项目Fork自[Console](https://github.com/halo-dev)
 
 ## 🚀 Features:
-- 支持多种类型的数据库：SQLite、MySQL(TODO: PostgreSQL)
+- 支持多种类型的数据库：SQLite、MySQL、PostgreSQL
 - 体积小: 安装包仅仅只有10Mb
 - 高性能: 文章详情页可以达到2500 QPS(压测环境是: Intel Xeon Platinum 8260 4C 8G ,SQLite3)
 - 支持更换主题
@@ -90,11 +90,8 @@ See: https://hub.docker.com/r/gosonic/sonic
 | [Tink](https://github.com/raisons/sonic-theme-tink) |
 
 ## TODO
-- [ ] i18n
-- [ ] PostgreSQL
-- [ ] 更好的错误处理
 - [ ] 插件系统(基于 Wasm)
-- [ ] 使用新的web框架([Hertz](https://github.com/cloudwego/hertz))
+- [ ] 使用新的web框架([Hertz](https://github.com/cloudwego/hertz)) *(暂缓：迁移风险高、短期收益低)*
 
 
 ## 如何贡献

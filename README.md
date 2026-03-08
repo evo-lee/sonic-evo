@@ -23,7 +23,7 @@ Sonic means as fast as sound speed. Like its name, sonic is a high-performance b
 Thanks to the [Halo](https://github.com/halo-dev) project team, who inspired this project. The front-end is a project fork from Halo.
 
 ## 🚀 Features:
-- Support multiple types of databases: SQLite、MySQL(TODO: PostgreSQL)
+- Support multiple types of databases: SQLite、MySQL、PostgreSQL
 - Small: The installation file is only 10mb size
 - High-performance: Post details page can withstand 2500 QPS(Enviroment:   Intel Xeon Platinum 8260 4C 8G ,SQLite3)
 - Support changing theme
@@ -98,11 +98,8 @@ See: https://hub.docker.com/r/gosonic/sonic
 | [Tink](https://github.com/raisons/sonic-theme-tink) |
 
 ## TODO
-- [ ] i18n
-- [ ] PostgreSQL
-- [ ] Better error handling
 - [ ] Plugin(base on Wasm)
-- [ ] Use new web framework([Hertz](https://github.com/cloudwego/hertz))
+- [ ] Use new web framework([Hertz](https://github.com/cloudwego/hertz)) *(Deferred: high migration risk and low near-term ROI)*
 
 ## Contributing
 
