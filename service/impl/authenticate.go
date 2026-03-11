@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/go-sonic/sonic/cache"
 	"github.com/go-sonic/sonic/model/entity"
 	"github.com/go-sonic/sonic/service"
@@ -51,10 +53,14 @@ func (a *authenticateServiceImpl) doCategoryAuthenticate(ctx context.Context, ca
 		if _, ok := permissionsMap[cache.BuildCategoryPermissionKey(categoryID)]; ok {
 			return true, nil
 		}
-		if category.Password == password {
+		// Use bcrypt to compare hashed password
+		err := bcrypt.CompareHashAndPassword([]byte(category.Password), []byte(password))
+		if err == nil {
+			// Password matches
 			err := a.setAccessPermission(ctx, cache.BuildCategoryPermissionKey(categoryID))
 			return false, xerr.WithErrMsgf(err, "set category permission cache failed")
 		}
+		// Password doesn't match or error occurred
 		return false, nil
 	}
 	if category.ParentID == 0 {

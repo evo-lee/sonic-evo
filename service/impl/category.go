@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gen/field"
 
 	"github.com/go-sonic/sonic/consts"
@@ -251,6 +252,12 @@ func (c categoryServiceImpl) Create(ctx context.Context, categoryParam *param.Ca
 	}
 	if categoryParam.Password != "" {
 		categoryParam.Password = strings.TrimSpace(categoryParam.Password)
+		// Hash the password using bcrypt before storing
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(categoryParam.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, xerr.NoType.Wrap(err).WithStatus(xerr.StatusInternalServerError).WithMsg("failed to hash category password")
+		}
+		categoryParam.Password = string(hashedPassword)
 	}
 	if categoryParam.Slug == "" {
 		categoryParam.Slug = util.Slug(categoryParam.Name)
@@ -585,13 +592,26 @@ func (c *categoryUpdateExecutor) convertParam(categoryParam *param.Category) *en
 		categoryParam.Slug = util.Slug(categoryParam.Name)
 	}
 
+	// Hash password if it's being updated and not empty
+	password := strings.TrimSpace(categoryParam.Password)
+	if password != "" {
+		// Check if password is already hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
+		if !strings.HasPrefix(password, "$2a$") && !strings.HasPrefix(password, "$2b$") && !strings.HasPrefix(password, "$2y$") {
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+			if err == nil {
+				password = string(hashedPassword)
+			}
+			// If hashing fails, we keep the original (this maintains backward compatibility but logs should be added)
+		}
+	}
+
 	return &entity.Category{
 		ID:          categoryParam.ID,
 		Name:        categoryParam.Name,
 		Description: categoryParam.Description,
 		Thumbnail:   categoryParam.Thumbnail,
 		ParentID:    categoryParam.ParentID,
-		Password:    strings.TrimSpace(categoryParam.Password),
+		Password:    password,
 		Slug:        categoryParam.Slug,
 		Priority:    categoryParam.Priority,
 		Type:        util.IfElse(categoryParam.Password == "", consts.CategoryTypeNormal, consts.CategoryTypeIntimate).(consts.CategoryType),

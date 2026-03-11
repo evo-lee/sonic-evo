@@ -117,7 +117,18 @@ func (b *backupServiceImpl) ListFiles(ctx context.Context, path string, backupTy
 }
 
 func (b *backupServiceImpl) GetBackupFilePath(ctx context.Context, path string, filename string) (string, error) {
-	backupFilePath := filepath.Join(path, filename)
+	// Clean the paths to prevent path traversal
+	cleanPath := filepath.Clean(path)
+	cleanFilename := filepath.Clean(filename)
+
+	// Construct the full path
+	backupFilePath := filepath.Join(cleanPath, cleanFilename)
+
+	// Verify the resulting path is within the allowed directory
+	if !strings.HasPrefix(backupFilePath, cleanPath+string(os.PathSeparator)) {
+		return "", xerr.BadParam.New("invalid file path: path traversal detected")
+	}
+
 	_, err := os.Stat(backupFilePath)
 	if err != nil {
 		if os.IsNotExist(err) {

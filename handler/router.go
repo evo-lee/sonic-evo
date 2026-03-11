@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	"github.com/go-sonic/sonic/config"
 	"github.com/go-sonic/sonic/consts"
@@ -21,11 +19,50 @@ func (s *Server) RegisterRouters() {
 	if config.IsDev() {
 		router.Use(middleware.NewDevCORSMiddleware().Handler())
 	}
-	router.Use(s.LocaleMiddleware.Handler(), s.RequestIDMiddleware.Handler())
+	// Apply timeout middleware globally to all routes
+	router.Use(s.TimeoutMiddleware.Handler(), s.LocaleMiddleware.Handler(), s.RequestIDMiddleware.Handler())
 
 	{
 		router.GET("/ping", func(ctx web.Context) {
 			_, _ = ctx.Writer().Write([]byte("pong"))
+		})
+
+		// Health check endpoint - always returns 200 if server is running
+		router.GET("/health", func(ctx web.Context) {
+			ctx.JSON(200, map[string]string{"status": "ok"})
+		})
+
+		// Readiness check endpoint - verifies database connectivity
+		router.GET("/ready", func(ctx web.Context) {
+			// Check database connection
+			db := dal.GetQueryByCtx(ctx.RequestContext())
+			if db == nil {
+				ctx.JSON(503, map[string]string{
+					"status": "not ready",
+					"reason": "database not initialized",
+				})
+				return
+			}
+
+			// Ping database to verify connectivity
+			sqlDB, err := dal.GetDB().DB()
+			if err != nil {
+				ctx.JSON(503, map[string]string{
+					"status": "not ready",
+					"reason": "database connection error",
+				})
+				return
+			}
+
+			if err := sqlDB.Ping(); err != nil {
+				ctx.JSON(503, map[string]string{
+					"status": "not ready",
+					"reason": "database ping failed",
+				})
+				return
+			}
+
+			ctx.JSON(200, map[string]string{"status": "ready"})
 		})
 		{
 			staticRouter := router.Group("/")
@@ -41,13 +78,15 @@ func (s *Server) RegisterRouters() {
 			adminAPIRouter := router.Group("/api/admin")
 			adminAPIRouter.Use(s.LogMiddleware.HandlerWithConfig(middleware.LoggerConfig{}), s.RecoveryMiddleware.Handler(), s.InstallRedirectMiddleware.Handler())
 			adminAPIRouter.GET("/is_installed", s.wrapHandler(s.AdminHandler.IsInstalled))
-			adminAPIRouter.POST("/login/precheck", s.wrapHandler(s.AdminHandler.AuthPreCheck))
-			adminAPIRouter.POST("/login", s.wrapHandler(s.AdminHandler.Auth))
-			adminAPIRouter.POST("/refresh/:refreshToken", s.wrapHandler(s.AdminHandler.RefreshToken))
+
+			// Apply rate limiting to authentication endpoints
+			adminAPIRouter.POST("/login/precheck", s.LoginRateLimitMiddleware.Handler(nil), s.wrapHandler(s.AdminHandler.AuthPreCheck))
+			adminAPIRouter.POST("/login", s.LoginRateLimitMiddleware.Handler(nil), s.wrapHandler(s.AdminHandler.Auth))
+			adminAPIRouter.POST("/refresh/:refreshToken", s.LoginRateLimitMiddleware.Handler(nil), s.wrapHandler(s.AdminHandler.RefreshToken))
 			adminAPIRouter.POST("/installations", s.wrapHandler(s.InstallHandler.InstallBlog))
 			{
 				authRouter := adminAPIRouter.Group("")
-				authRouter.Use(s.AuthMiddleware.Handler())
+				authRouter.Use(s.AuthMiddleware.Handler(), s.CSRFMiddleware.Handler())
 				authRouter.POST("/logout", s.wrapHandler(s.AdminHandler.LogOut))
 				authRouter.POST("/password/code", s.wrapHandler(s.AdminHandler.SendResetCode))
 				authRouter.GET("/environments", s.wrapHandler(s.AdminHandler.GetEnvironments))
@@ -347,9 +386,6 @@ func (s *Server) RegisterRouters() {
 
 func (s *Server) registerDynamicRouters(contentRouter web.Router) error {
 	ctx := context.Background()
-	ctx = dal.SetCtxQuery(ctx, dal.GetQueryByCtx(ctx).ReplaceDB(dal.GetDB().Session(
-		&gorm.Session{Logger: dal.DB.Logger.LogMode(logger.Warn)},
-	)))
 
 	archivePath, err := s.OptionService.GetArchivePrefix(ctx)
 	if err != nil {

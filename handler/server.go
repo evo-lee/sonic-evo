@@ -33,6 +33,9 @@ type Server struct {
 	Router                    web.Router
 	Template                  *template.Template
 	AuthMiddleware            *middleware.AuthMiddleware
+	CSRFMiddleware            *middleware.CSRFMiddleware
+	LoginRateLimitMiddleware  *middleware.RateLimitMiddleware
+	TimeoutMiddleware         *middleware.TimeoutMiddleware
 	LocaleMiddleware          *middleware.LocaleMiddleware
 	RequestIDMiddleware       *middleware.RequestIDMiddleware
 	LogMiddleware             *middleware.LoggerMiddleware
@@ -91,6 +94,9 @@ type ServerParams struct {
 	Event                     event.Bus
 	Template                  *template.Template
 	AuthMiddleware            *middleware.AuthMiddleware
+	CSRFMiddleware            *middleware.CSRFMiddleware
+	LoginRateLimitMiddleware  *middleware.RateLimitMiddleware
+	TimeoutMiddleware         *middleware.TimeoutMiddleware
 	LocaleMiddleware          *middleware.LocaleMiddleware
 	RequestIDMiddleware       *middleware.RequestIDMiddleware
 	LogMiddleware             *middleware.LoggerMiddleware
@@ -156,6 +162,9 @@ func NewServer(param ServerParams, lifecycle fx.Lifecycle) *Server {
 		Router:                    router,
 		Template:                  param.Template,
 		AuthMiddleware:            param.AuthMiddleware,
+		CSRFMiddleware:            param.CSRFMiddleware,
+		LoginRateLimitMiddleware:  param.LoginRateLimitMiddleware,
+		TimeoutMiddleware:         param.TimeoutMiddleware,
 		LocaleMiddleware:          param.LocaleMiddleware,
 		RequestIDMiddleware:       param.RequestIDMiddleware,
 		LogMiddleware:             param.LogMiddleware,

@@ -31,7 +31,8 @@ func NewLogger(conf *config.Config) *zap.Logger {
 	}
 
 	// 传入 zap.AddCaller() 显示打日志点的文件名和行数
-	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.DPanicLevel))
+	// 传入 zap.AddStacktrace(zap.ErrorLevel) 在 Error 级别及以上添加堆栈跟踪
+	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
 
 	exportUseLogger = logger.WithOptions(zap.AddCallerSkip(1))
 	exportUseSugarLogger = exportUseLogger.Sugar()
